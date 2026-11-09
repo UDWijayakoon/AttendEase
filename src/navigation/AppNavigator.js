@@ -16,6 +16,7 @@ import AddEditScreen from '../screens/AddEditScreen';
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
+
 function MainTabNavigator() {
   return (
     <Tab.Navigator screenOptions={{ headerShown: false }}>
