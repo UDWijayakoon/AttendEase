@@ -12,6 +12,7 @@ import SubjectDetailScreen from '../screens/SubjectDetailScreen';
 import DailyLogScreen from '../screens/DailyLogScreen';
 import TimetableScreen from '../screens/TimetableScreen';
 import AddEditScreen from '../screens/AddEditScreen';
+import SettingsScreen from '../screens/SettingsScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -25,6 +26,7 @@ function MainTabNavigator() {
       <Tab.Screen name="Calendar" component={CalendarScreen} />
       <Tab.Screen name="Analytics" component={AnalyticsScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
 }

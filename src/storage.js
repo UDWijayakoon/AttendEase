@@ -39,6 +39,15 @@ export const initializeData = async () => {
   }
 };
 
+export const resetData = async () => {
+  await AsyncStorage.multiRemove([SUBJECTS_KEY, LOGS_KEY, TIMETABLE_KEY]);
+  await AsyncStorage.multiSet([
+    [SUBJECTS_KEY, JSON.stringify(INITIAL_SUBJECTS)],
+    [LOGS_KEY, JSON.stringify(INITIAL_LOGS)],
+    [TIMETABLE_KEY, JSON.stringify(INITIAL_TIMETABLE)]
+  ]);
+};
+
 export const getSubjects = async () => {
   try {
     const jsonValue = await AsyncStorage.getItem(SUBJECTS_KEY);
