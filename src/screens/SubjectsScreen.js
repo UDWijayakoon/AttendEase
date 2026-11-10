@@ -40,12 +40,16 @@ export default function SubjectsScreen({ navigation }) {
       targetPercentage: parseFloat(targetPercentage) || 80
     };
 
-    await addSubject(newSub);
-    setCode('');
-    setName('');
-    setTargetPercentage('80');
-    Alert.alert('Success', 'New subject added successfully!');
-    loadData();
+    try {
+      await addSubject(newSub);
+      setCode('');
+      setName('');
+      setTargetPercentage('80');
+      Alert.alert('Success', 'New subject added successfully!');
+      loadData();
+    } catch (e) {
+      Alert.alert('Error', 'Failed to add subject. Please try again.');
+    }
   };
 
   const renderSubjectItem = ({ item }) => {

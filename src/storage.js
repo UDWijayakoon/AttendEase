@@ -26,8 +26,7 @@ const INITIAL_TIMETABLE = [
 ];
 
 export const initializeData = async () => {
-  try { 
-
+  try {
     const existingSubjects = await AsyncStorage.getItem(SUBJECTS_KEY);
     if (!existingSubjects) {
       await AsyncStorage.setItem(SUBJECTS_KEY, JSON.stringify(INITIAL_SUBJECTS));
@@ -58,6 +57,23 @@ export const getSubjects = async () => {
   }
 };
 
+export const addSubject = async (subject) => {
+  try {
+    const currentSubjects = await getSubjects();
+    const newSubject = {
+      ...subject,
+      id: Date.now().toString(),
+      targetPercentage: subject.targetPercentage ? parseFloat(subject.targetPercentage) : 80
+    };
+    const updatedSubjects = [newSubject, ...currentSubjects];
+    await AsyncStorage.setItem(SUBJECTS_KEY, JSON.stringify(updatedSubjects));
+    return updatedSubjects;
+  } catch (e) {
+    console.error('Error adding subject', e);
+    throw e;
+  }
+};
+
 export const getAttendanceLogs = async () => {
   try {
     const jsonValue = await AsyncStorage.getItem(LOGS_KEY);
@@ -77,6 +93,7 @@ export const addAttendanceLog = async (newLog) => {
     return updatedLogs;
   } catch (e) {
     console.error('Error adding attendance log', e);
+    throw e;
   }
 };
 
@@ -99,6 +116,7 @@ export const addTimetableSlot = async (slot) => {
     return updated;
   } catch (e) {
     console.error('Error adding timetable slot', e);
+    throw e;
   }
 };
 
@@ -114,20 +132,4 @@ export const calculateSubjectStats = (subjectId, logs) => {
     percentage: parseFloat(percentage),
     isCritical: parseFloat(percentage) < 80.0
   };
-};
-
-export const addSubject = async (subject) => {
-  try {
-    const currentSubjects = await getSubjects();
-    const newSubject = { 
-      ...subject, 
-      id: Date.now().toString(),
-      targetPercentage: subject.targetPercentage ? parseFloat(subject.targetPercentage) : 80 
-    };
-    const updatedSubjects = [newSubject, ...currentSubjects];
-    await AsyncStorage.setItem(SUBJECTS_KEY, JSON.stringify(updatedSubjects));
-    return updatedSubjects;
-  } catch (e) {
-    console.error('Error adding subject', e);
-  }
 };

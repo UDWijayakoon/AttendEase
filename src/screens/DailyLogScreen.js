@@ -36,10 +36,14 @@ export default function DailyLogScreen({ navigation }) {
       notes
     };
 
-    await addAttendanceLog(newLog);
-    Alert.alert('Success', 'Attendance logged successfully!', [
-      { text: 'OK', onPress: () => navigation.goBack() }
-    ]);
+    try {
+      await addAttendanceLog(newLog);
+      Alert.alert('Success', 'Attendance logged successfully!', [
+        { text: 'OK', onPress: () => navigation.goBack() }
+      ]);
+    } catch (e) {
+      Alert.alert('Error', 'Failed to save attendance. Please try again.');
+    }
   };
 
   return (

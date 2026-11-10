@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, TextInput, Alert, RefreshControl, ScrollView } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { getTimetable, getSubjects } from '../storage';
+import { getTimetable, getSubjects, addTimetableSlot } from '../storage';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -10,6 +10,13 @@ export default function TimetableScreen() {
   const [timetable, setTimetable] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
+
+  // Form states for new slot
+  const [formDay, setFormDay] = useState('Monday');
+  const [subjectId, setSubjectId] = useState('');
+  const [time, setTime] = useState('');
+  const [room, setRoom] = useState('');
 
   const loadData = async () => {
     setRefreshing(true);
@@ -17,6 +24,9 @@ export default function TimetableScreen() {
     const loadedSubjects = await getSubjects();
     setTimetable(loadedTimetable);
     setSubjects(loadedSubjects);
+    if (loadedSubjects.length > 0 && !subjectId) {
+      setSubjectId(loadedSubjects[0].id);
+    }
     setRefreshing(false);
   };
 
@@ -26,11 +36,31 @@ export default function TimetableScreen() {
     }, [])
   );
 
-  // Filter slots for the selected day
+  const handleAddSlot = async () => {
+    if (!time.trim() || !room.trim() || !subjects.some(subject => subject.id === subjectId)) {
+      Alert.alert('Error', 'Please fill in all fields (Subject, Time, and Room).');
+      return;
+    }
+
+    const newSlot = { day: formDay, subjectId, time: time.trim(), room: room.trim() };
+
+    try {
+      const updatedTimetable = await addTimetableSlot(newSlot);
+      setTimetable(updatedTimetable);
+      setSelectedDay(formDay);
+      setTime('');
+      setRoom('');
+      setShowAddForm(false);
+      Alert.alert('Success', 'Timetable slot added successfully!');
+    } catch (e) {
+      Alert.alert('Error', 'Failed to add timetable slot. Please try again.');
+    }
+  };
+
   const filteredSlots = timetable.filter(item => item.day === selectedDay);
 
-  const getSubjectDetails = (subjectId) => {
-    return subjects.find(s => s.id === subjectId) || { code: 'N/A', name: 'Unknown Subject' };
+  const getSubjectDetails = (subId) => {
+    return subjects.find(s => s.id === subId) || { code: 'N/A', name: 'Unknown Subject' };
   };
 
   const renderSlotItem = ({ item }) => {
@@ -49,9 +79,75 @@ export default function TimetableScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.screenTitle}>Weekly Timetable</Text>
-      
+    <ScrollView
+      contentContainerStyle={styles.container}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadData} />}
+    >
+      <View style={styles.titleRow}>
+        <Text style={styles.screenTitle}>Weekly Timetable</Text>
+        <TouchableOpacity
+          style={styles.toggleButton}
+          onPress={() => setShowAddForm(!showAddForm)}
+        >
+          <Text style={styles.toggleButtonText}>{showAddForm ? 'Cancel' : '+ Add Slot'}</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Add Slot Form Modal/Card */}
+      {showAddForm && (
+        <View style={styles.formCard}>
+          <Text style={styles.formTitle}>Add Class to Timetable</Text>
+
+          <Text style={styles.inputLabel}>Select Day</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.miniDaysRow}>
+            {DAYS.map(d => (
+              <TouchableOpacity
+                key={d}
+                style={[styles.miniDayChip, formDay === d && styles.activeMiniDayChip]}
+                onPress={() => setFormDay(d)}
+              >
+                <Text style={[styles.miniDayChipText, formDay === d && styles.activeMiniDayChipText]}>{d}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          <Text style={styles.inputLabel}>Select Subject Code</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.miniDaysRow}>
+            {subjects.length > 0 ? subjects.map(sub => (
+                <TouchableOpacity
+                  key={sub.id}
+                  style={[styles.miniDayChip, subjectId === sub.id && styles.activeMiniDayChip]}
+                  onPress={() => setSubjectId(sub.id)}
+                >
+                  <Text style={[styles.miniDayChipText, subjectId === sub.id && styles.activeMiniDayChipText]}>{sub.code}</Text>
+                </TouchableOpacity>
+              )) : (
+                <Text style={styles.emptyText}>Add a subject before scheduling a class.</Text>
+              )}
+          </ScrollView>
+
+          <Text style={styles.inputLabel}>Time Slot (e.g., 09:00 AM - 11:00 AM)</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="09:00 AM - 11:00 AM"
+            value={time}
+            onChangeText={setTime}
+          />
+
+          <Text style={styles.inputLabel}>Room / Hall (e.g., Lab 3 or Hall A)</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Lab 3"
+            value={room}
+            onChangeText={setRoom}
+          />
+
+          <TouchableOpacity style={styles.saveButton} onPress={handleAddSlot}>
+            <Text style={styles.saveButtonText}>Save Timetable Slot</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* Day Selector Chips */}
       <View style={styles.daysRow}>
         {DAYS.map(day => (
@@ -73,31 +169,43 @@ export default function TimetableScreen() {
         data={filteredSlots}
         keyExtractor={item => item.id}
         renderItem={renderSlotItem}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadData} />}
-        contentContainerStyle={styles.listContainer}
+        scrollEnabled={false}
         ListEmptyComponent={
           <Text style={styles.emptyText}>No classes scheduled for {selectedDay}.</Text>
         }
       />
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8f9fa', padding: 16 },
-  screenTitle: { fontSize: 22, fontWeight: 'bold', color: '#212529', marginBottom: 12 },
-  daysRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
+  container: { padding: 16, backgroundColor: '#f8f9fa', flexGrow: 1 },
+  titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  screenTitle: { fontSize: 22, fontWeight: 'bold', color: '#212529' },
+  toggleButton: { backgroundColor: '#007AFF', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 8 },
+  toggleButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 13 },
+  formCard: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: '#dee2e6', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 3, elevation: 2 },
+  formTitle: { fontSize: 16, fontWeight: 'bold', color: '#343a40', marginBottom: 10 },
+  inputLabel: { fontSize: 12, fontWeight: 'bold', color: '#6c757d', marginBottom: 4, marginTop: 8, textTransform: 'uppercase' },
+  miniDaysRow: { flexDirection: 'row', marginBottom: 4 },
+  miniDayChip: { paddingVertical: 6, paddingHorizontal: 10, backgroundColor: '#f1f3f5', borderRadius: 6, marginRight: 6, borderWidth: 1, borderColor: '#dee2e6' },
+  activeMiniDayChip: { backgroundColor: '#007AFF', borderColor: '#007AFF' },
+  miniDayChipText: { fontSize: 12, fontWeight: 'bold', color: '#495057' },
+  activeMiniDayChipText: { color: '#fff' },
+  input: { backgroundColor: '#f8f9fa', borderWidth: 1, borderColor: '#ced4da', borderRadius: 8, padding: 10, fontSize: 14, color: '#333' },
+  saveButton: { backgroundColor: '#28a745', padding: 12, borderRadius: 8, alignItems: 'center', marginTop: 14 },
+  saveButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
+  daysRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16, marginTop: 6 },
   dayChip: { paddingVertical: 8, paddingHorizontal: 10, backgroundColor: '#e9ecef', borderRadius: 8, alignItems: 'center' },
   activeDayChip: { backgroundColor: '#007AFF' },
   dayChipText: { fontSize: 13, fontWeight: 'bold', color: '#495057' },
   activeDayChipText: { color: '#fff' },
   selectedDayHeader: { fontSize: 18, fontWeight: 'bold', color: '#343a40', marginBottom: 10 },
-  listContainer: { paddingBottom: 20 },
   slotCard: { backgroundColor: '#fff', borderRadius: 10, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: '#dee2e6', borderLeftWidth: 5, borderLeftColor: '#007AFF', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 3, elevation: 2 },
   slotHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
   subjectCode: { fontSize: 15, fontWeight: 'bold', color: '#007AFF' },
   timeText: { fontSize: 13, fontWeight: '600', color: '#6c757d' },
   subjectName: { fontSize: 17, fontWeight: 'bold', color: '#212529', marginBottom: 6 },
   roomText: { fontSize: 13, color: '#495057' },
-  emptyText: { textAlign: 'center', color: '#adb5bd', marginTop: 40, fontSize: 15 }
+  emptyText: { textAlign: 'center', color: '#adb5bd', marginTop: 30, fontSize: 15 }
 });
