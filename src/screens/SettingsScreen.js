@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, Switch, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { resetData } from '../storage';
+import { COLORS } from '../theme';
 
 export default function SettingsScreen({ navigation }) {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
@@ -80,18 +81,18 @@ export default function SettingsScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, backgroundColor: '#f8f9fa', flexGrow: 1 },
-  screenTitle: { fontSize: 22, fontWeight: 'bold', color: '#212529', marginBottom: 16 },
-  sectionCard: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: '#dee2e6', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 3, elevation: 2 },
-  sectionHeader: { fontSize: 16, fontWeight: 'bold', color: '#343a40', marginBottom: 12 },
+  container: { padding: 16, backgroundColor: COLORS.background, flexGrow: 1 },
+  screenTitle: { fontSize: 22, fontWeight: 'bold', color: COLORS.textPrimary, marginBottom: 16 },
+  sectionCard: { backgroundColor: COLORS.cardBg, borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: COLORS.border, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 3, elevation: 2 },
+  sectionHeader: { fontSize: 16, fontWeight: 'bold', color: COLORS.textPrimary, marginBottom: 12 },
   settingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8 },
   settingInfo: { flex: 1, marginRight: 12 },
-  settingLabel: { fontSize: 15, fontWeight: 'bold', color: '#212529' },
-  settingSubtext: { fontSize: 12, color: '#6c757d', marginTop: 2 },
-  divider: { height: 1, backgroundColor: '#e9ecef', marginVertical: 8 },
-  dangerButton: { backgroundColor: '#ffebee', borderWidth: 1, borderColor: '#ffcdd2', padding: 12, borderRadius: 8, alignItems: 'center' },
-  dangerButtonText: { color: '#c62828', fontWeight: 'bold', fontSize: 14 },
+  settingLabel: { fontSize: 15, fontWeight: 'bold', color: COLORS.textPrimary },
+  settingSubtext: { fontSize: 12, color: COLORS.textSecondary, marginTop: 2 },
+  divider: { height: 1, backgroundColor: COLORS.border, marginVertical: 8 },
+  dangerButton: { backgroundColor: COLORS.dangerBg, borderWidth: 1, borderColor: COLORS.dangerBg, padding: 12, borderRadius: 8, alignItems: 'center' },
+  dangerButtonText: { color: COLORS.danger, fontWeight: 'bold', fontSize: 14 },
   versionCard: { alignItems: 'center', marginTop: 20, paddingBottom: 20 },
-  versionTitle: { fontSize: 14, fontWeight: 'bold', color: '#6c757d' },
-  versionSubtitle: { fontSize: 12, color: '#adb5bd', marginTop: 4, textAlign: 'center' }
+  versionTitle: { fontSize: 14, fontWeight: 'bold', color: COLORS.textSecondary },
+  versionSubtitle: { fontSize: 12, color: COLORS.textSecondary, marginTop: 4, textAlign: 'center' }
 });

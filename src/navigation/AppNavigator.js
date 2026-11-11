@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
@@ -13,6 +13,7 @@ import DailyLogScreen from '../screens/DailyLogScreen';
 import TimetableScreen from '../screens/TimetableScreen';
 import AddEditScreen from '../screens/AddEditScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import { COLORS } from '../theme';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -33,7 +34,20 @@ function MainTabNavigator() {
 
 export default function AppNavigator() {
   return (
-    <NavigationContainer>
+    <NavigationContainer
+      theme={{
+        ...DefaultTheme,
+        colors: {
+          ...DefaultTheme.colors,
+          primary: COLORS.primary,
+          background: COLORS.background,
+          card: COLORS.cardBg,
+          text: COLORS.textPrimary,
+          border: COLORS.border,
+          notification: COLORS.danger,
+        },
+      }}
+    >
       <Stack.Navigator initialRouteName="MainTabs">
         <Stack.Screen name="MainTabs" component={MainTabNavigator} options={{ headerShown: false }} />
         <Stack.Screen name="SubjectDetail" component={SubjectDetailScreen} options={{ title: 'Subject Details' }} />

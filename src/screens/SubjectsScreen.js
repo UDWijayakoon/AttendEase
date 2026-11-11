@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity, Alert, RefreshControl, ScrollView } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { getSubjects, addSubject, getAttendanceLogs, calculateSubjectStats } from '../storage';
+import { COLORS } from '../theme';
 
 export default function SubjectsScreen({ navigation }) {
   const [subjects, setSubjects] = useState([]);
@@ -124,23 +125,23 @@ export default function SubjectsScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, backgroundColor: '#f8f9fa', flexGrow: 1 },
-  screenTitle: { fontSize: 22, fontWeight: 'bold', color: '#212529', marginBottom: 16 },
-  formCard: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: '#dee2e6', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 3, elevation: 2 },
-  formTitle: { fontSize: 16, fontWeight: 'bold', color: '#343a40', marginBottom: 12 },
-  input: { backgroundColor: '#f8f9fa', borderWidth: 1, borderColor: '#ced4da', borderRadius: 8, padding: 10, fontSize: 15, marginBottom: 10, color: '#333' },
-  addButton: { backgroundColor: '#007AFF', padding: 12, borderRadius: 8, alignItems: 'center', marginTop: 4 },
-  addButtonText: { color: '#fff', fontSize: 15, fontWeight: 'bold' },
-  sectionHeader: { fontSize: 18, fontWeight: 'bold', color: '#343a40', marginBottom: 12 },
-  subjectCard: { backgroundColor: '#fff', borderRadius: 10, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: '#dee2e6', borderLeftWidth: 5, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 3, elevation: 2 },
-  safeBorder: { borderLeftColor: '#28a745' },
-  criticalBorder: { borderLeftColor: '#dc3545' },
+  container: { padding: 16, backgroundColor: COLORS.background, flexGrow: 1 },
+  screenTitle: { fontSize: 22, fontWeight: 'bold', color: COLORS.textPrimary, marginBottom: 16 },
+  formCard: { backgroundColor: COLORS.cardBg, borderRadius: 12, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: COLORS.border, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 3, elevation: 2 },
+  formTitle: { fontSize: 16, fontWeight: 'bold', color: COLORS.textPrimary, marginBottom: 12 },
+  input: { backgroundColor: COLORS.background, borderWidth: 1, borderColor: COLORS.border, borderRadius: 8, padding: 10, fontSize: 15, marginBottom: 10, color: COLORS.textPrimary },
+  addButton: { backgroundColor: COLORS.primary, padding: 12, borderRadius: 8, alignItems: 'center', marginTop: 4 },
+  addButtonText: { color: COLORS.cardBg, fontSize: 15, fontWeight: 'bold' },
+  sectionHeader: { fontSize: 18, fontWeight: 'bold', color: COLORS.textPrimary, marginBottom: 12 },
+  subjectCard: { backgroundColor: COLORS.cardBg, borderRadius: 10, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: COLORS.border, borderLeftWidth: 5, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 3, elevation: 2 },
+  safeBorder: { borderLeftColor: COLORS.success },
+  criticalBorder: { borderLeftColor: COLORS.danger },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  subjectCode: { fontSize: 14, fontWeight: 'bold', color: '#6c757d', textTransform: 'uppercase' },
+  subjectCode: { fontSize: 14, fontWeight: 'bold', color: COLORS.textSecondary, textTransform: 'uppercase' },
   percentageText: { fontSize: 16, fontWeight: 'bold' },
-  textSafe: { color: '#28a745' },
-  textCritical: { color: '#dc3545' },
-  subjectName: { fontSize: 18, fontWeight: 'bold', color: '#212529', marginBottom: 6 },
-  statsDetail: { fontSize: 13, color: '#495057' },
-  emptyText: { textAlign: 'center', color: '#adb5bd', marginTop: 20, fontSize: 15 }
+  textSafe: { color: COLORS.success },
+  textCritical: { color: COLORS.danger },
+  subjectName: { fontSize: 18, fontWeight: 'bold', color: COLORS.textPrimary, marginBottom: 6 },
+  statsDetail: { fontSize: 13, color: COLORS.textSecondary },
+  emptyText: { textAlign: 'center', color: COLORS.textSecondary, marginTop: 20, fontSize: 15 }
 });

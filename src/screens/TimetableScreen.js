@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, TextInput, Alert, RefreshControl, ScrollView } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { getTimetable, getSubjects, addTimetableSlot } from '../storage';
+import { COLORS } from '../theme';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -179,33 +180,33 @@ export default function TimetableScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, backgroundColor: '#f8f9fa', flexGrow: 1 },
+  container: { padding: 16, backgroundColor: COLORS.background, flexGrow: 1 },
   titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  screenTitle: { fontSize: 22, fontWeight: 'bold', color: '#212529' },
-  toggleButton: { backgroundColor: '#007AFF', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 8 },
-  toggleButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 13 },
-  formCard: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: '#dee2e6', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 3, elevation: 2 },
-  formTitle: { fontSize: 16, fontWeight: 'bold', color: '#343a40', marginBottom: 10 },
-  inputLabel: { fontSize: 12, fontWeight: 'bold', color: '#6c757d', marginBottom: 4, marginTop: 8, textTransform: 'uppercase' },
+  screenTitle: { fontSize: 22, fontWeight: 'bold', color: COLORS.textPrimary },
+  toggleButton: { backgroundColor: COLORS.primary, paddingVertical: 6, paddingHorizontal: 12, borderRadius: 8 },
+  toggleButtonText: { color: COLORS.cardBg, fontWeight: 'bold', fontSize: 13 },
+  formCard: { backgroundColor: COLORS.cardBg, borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: COLORS.border, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 3, elevation: 2 },
+  formTitle: { fontSize: 16, fontWeight: 'bold', color: COLORS.textPrimary, marginBottom: 10 },
+  inputLabel: { fontSize: 12, fontWeight: 'bold', color: COLORS.textSecondary, marginBottom: 4, marginTop: 8, textTransform: 'uppercase' },
   miniDaysRow: { flexDirection: 'row', marginBottom: 4 },
-  miniDayChip: { paddingVertical: 6, paddingHorizontal: 10, backgroundColor: '#f1f3f5', borderRadius: 6, marginRight: 6, borderWidth: 1, borderColor: '#dee2e6' },
-  activeMiniDayChip: { backgroundColor: '#007AFF', borderColor: '#007AFF' },
-  miniDayChipText: { fontSize: 12, fontWeight: 'bold', color: '#495057' },
-  activeMiniDayChipText: { color: '#fff' },
-  input: { backgroundColor: '#f8f9fa', borderWidth: 1, borderColor: '#ced4da', borderRadius: 8, padding: 10, fontSize: 14, color: '#333' },
-  saveButton: { backgroundColor: '#28a745', padding: 12, borderRadius: 8, alignItems: 'center', marginTop: 14 },
-  saveButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
+  miniDayChip: { paddingVertical: 6, paddingHorizontal: 10, backgroundColor: COLORS.background, borderRadius: 6, marginRight: 6, borderWidth: 1, borderColor: COLORS.border },
+  activeMiniDayChip: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
+  miniDayChipText: { fontSize: 12, fontWeight: 'bold', color: COLORS.textSecondary },
+  activeMiniDayChipText: { color: COLORS.cardBg },
+  input: { backgroundColor: COLORS.background, borderWidth: 1, borderColor: COLORS.border, borderRadius: 8, padding: 10, fontSize: 14, color: COLORS.textPrimary },
+  saveButton: { backgroundColor: COLORS.success, padding: 12, borderRadius: 8, alignItems: 'center', marginTop: 14 },
+  saveButtonText: { color: COLORS.cardBg, fontWeight: 'bold', fontSize: 14 },
   daysRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16, marginTop: 6 },
-  dayChip: { paddingVertical: 8, paddingHorizontal: 10, backgroundColor: '#e9ecef', borderRadius: 8, alignItems: 'center' },
-  activeDayChip: { backgroundColor: '#007AFF' },
-  dayChipText: { fontSize: 13, fontWeight: 'bold', color: '#495057' },
-  activeDayChipText: { color: '#fff' },
-  selectedDayHeader: { fontSize: 18, fontWeight: 'bold', color: '#343a40', marginBottom: 10 },
-  slotCard: { backgroundColor: '#fff', borderRadius: 10, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: '#dee2e6', borderLeftWidth: 5, borderLeftColor: '#007AFF', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 3, elevation: 2 },
+  dayChip: { paddingVertical: 8, paddingHorizontal: 10, backgroundColor: COLORS.border, borderRadius: 8, alignItems: 'center' },
+  activeDayChip: { backgroundColor: COLORS.primary },
+  dayChipText: { fontSize: 13, fontWeight: 'bold', color: COLORS.textSecondary },
+  activeDayChipText: { color: COLORS.cardBg },
+  selectedDayHeader: { fontSize: 18, fontWeight: 'bold', color: COLORS.textPrimary, marginBottom: 10 },
+  slotCard: { backgroundColor: COLORS.cardBg, borderRadius: 10, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: COLORS.border, borderLeftWidth: 5, borderLeftColor: COLORS.primary, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 3, elevation: 2 },
   slotHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  subjectCode: { fontSize: 15, fontWeight: 'bold', color: '#007AFF' },
-  timeText: { fontSize: 13, fontWeight: '600', color: '#6c757d' },
-  subjectName: { fontSize: 17, fontWeight: 'bold', color: '#212529', marginBottom: 6 },
-  roomText: { fontSize: 13, color: '#495057' },
-  emptyText: { textAlign: 'center', color: '#adb5bd', marginTop: 30, fontSize: 15 }
+  subjectCode: { fontSize: 15, fontWeight: 'bold', color: COLORS.primary },
+  timeText: { fontSize: 13, fontWeight: '600', color: COLORS.textSecondary },
+  subjectName: { fontSize: 17, fontWeight: 'bold', color: COLORS.textPrimary, marginBottom: 6 },
+  roomText: { fontSize: 13, color: COLORS.textSecondary },
+  emptyText: { textAlign: 'center', color: COLORS.textSecondary, marginTop: 30, fontSize: 15 }
 });

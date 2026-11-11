@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { getSubjects, addAttendanceLog } from '../storage';
+import { COLORS } from '../theme';
 
 export default function DailyLogScreen({ navigation }) {
   const [subjects, setSubjects] = useState([]);
@@ -120,22 +121,22 @@ export default function DailyLogScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, backgroundColor: '#f8f9fa', flexGrow: 1 },
-  label: { fontSize: 16, fontWeight: 'bold', color: '#333', marginTop: 16, marginBottom: 8 },
+  container: { padding: 16, backgroundColor: COLORS.background, flexGrow: 1 },
+  label: { fontSize: 16, fontWeight: 'bold', color: COLORS.textPrimary, marginTop: 16, marginBottom: 8 },
   pickerRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  subjectChip: { paddingVertical: 8, paddingHorizontal: 14, backgroundColor: '#e9ecef', borderRadius: 20, borderWidth: 1, borderColor: '#ced4da', marginRight: 8, marginBottom: 8 },
-  selectedChip: { backgroundColor: '#007AFF', borderColor: '#007AFF' },
-  chipText: { color: '#495057', fontWeight: '600' },
-  selectedChipText: { color: '#fff' },
+  subjectChip: { paddingVertical: 8, paddingHorizontal: 14, backgroundColor: COLORS.border, borderRadius: 20, borderWidth: 1, borderColor: COLORS.border, marginRight: 8, marginBottom: 8 },
+  selectedChip: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
+  chipText: { color: COLORS.textSecondary, fontWeight: '600' },
+  selectedChipText: { color: COLORS.cardBg },
   toggleRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 10 },
-  toggleButton: { flex: 1, padding: 12, backgroundColor: '#e9ecef', borderRadius: 8, alignItems: 'center', borderWidth: 1, borderColor: '#ced4da' },
-  presentActive: { backgroundColor: '#28a745', borderColor: '#28a745' },
-  absentActive: { backgroundColor: '#dc3545', borderColor: '#dc3545' },
-  typeActive: { backgroundColor: '#17a2b8', borderColor: '#17a2b8' },
-  toggleText: { fontWeight: 'bold', color: '#495057' },
-  activeText: { color: '#fff' },
-  input: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#ced4da', borderRadius: 8, padding: 12, fontSize: 16, color: '#333' },
+  toggleButton: { flex: 1, padding: 12, backgroundColor: COLORS.border, borderRadius: 8, alignItems: 'center', borderWidth: 1, borderColor: COLORS.border },
+  presentActive: { backgroundColor: COLORS.success, borderColor: COLORS.success },
+  absentActive: { backgroundColor: COLORS.danger, borderColor: COLORS.danger },
+  typeActive: { backgroundColor: COLORS.secondary, borderColor: COLORS.secondary },
+  toggleText: { fontWeight: 'bold', color: COLORS.textSecondary },
+  activeText: { color: COLORS.cardBg },
+  input: { backgroundColor: COLORS.cardBg, borderWidth: 1, borderColor: COLORS.border, borderRadius: 8, padding: 12, fontSize: 16, color: COLORS.textPrimary },
   textArea: { height: 80, textAlignVertical: 'top' },
-  saveButton: { backgroundColor: '#007AFF', padding: 16, borderRadius: 8, alignItems: 'center', marginTop: 30 },
-  saveButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' }
+  saveButton: { backgroundColor: COLORS.primary, padding: 16, borderRadius: 8, alignItems: 'center', marginTop: 30 },
+  saveButtonText: { color: COLORS.cardBg, fontSize: 16, fontWeight: 'bold' }
 });

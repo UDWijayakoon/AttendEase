@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, RefreshControl } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { getAttendanceLogs, getSubjects, calculateSubjectStats } from '../storage';
+import { COLORS } from '../theme';
 
 export default function ProfileScreen() {
   const [subjects, setSubjects] = useState([]);
@@ -141,36 +142,36 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, backgroundColor: '#f8f9fa', flexGrow: 1 },
-  profileHeaderCard: { backgroundColor: '#fff', borderRadius: 12, padding: 20, alignItems: 'center', marginBottom: 20, borderWidth: 1, borderColor: '#dee2e6', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 3, elevation: 2 },
-  avatarPlaceholder: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#007AFF', justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
-  avatarText: { fontSize: 36, fontWeight: 'bold', color: '#fff' },
-  studentName: { fontSize: 22, fontWeight: 'bold', color: '#212529' },
-  regNo: { fontSize: 14, color: '#6c757d', marginTop: 2, fontWeight: '600' },
-  statusBadge: { backgroundColor: '#e8f5e9', paddingVertical: 4, paddingHorizontal: 12, borderRadius: 16, marginTop: 10 },
-  statusText: { color: '#28a745', fontWeight: 'bold', fontSize: 12 },
-  sectionHeader: { fontSize: 18, fontWeight: 'bold', color: '#343a40', marginBottom: 12 },
-  infoCard: { backgroundColor: '#fff', borderRadius: 10, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: '#dee2e6' },
+  container: { padding: 16, backgroundColor: COLORS.background, flexGrow: 1 },
+  profileHeaderCard: { backgroundColor: COLORS.cardBg, borderRadius: 12, padding: 20, alignItems: 'center', marginBottom: 20, borderWidth: 1, borderColor: COLORS.border, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 3, elevation: 2 },
+  avatarPlaceholder: { width: 80, height: 80, borderRadius: 40, backgroundColor: COLORS.primary, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
+  avatarText: { fontSize: 36, fontWeight: 'bold', color: COLORS.cardBg },
+  studentName: { fontSize: 22, fontWeight: 'bold', color: COLORS.textPrimary },
+  regNo: { fontSize: 14, color: COLORS.textSecondary, marginTop: 2, fontWeight: '600' },
+  statusBadge: { backgroundColor: COLORS.successBg, paddingVertical: 4, paddingHorizontal: 12, borderRadius: 16, marginTop: 10 },
+  statusText: { color: COLORS.success, fontWeight: 'bold', fontSize: 12 },
+  sectionHeader: { fontSize: 18, fontWeight: 'bold', color: COLORS.textPrimary, marginBottom: 12 },
+  infoCard: { backgroundColor: COLORS.cardBg, borderRadius: 10, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: COLORS.border },
   infoRow: { paddingVertical: 8 },
-  label: { fontSize: 13, color: '#6c757d', textTransform: 'uppercase', fontWeight: 'bold' },
-  value: { fontSize: 15, fontWeight: 'bold', color: '#212529', marginTop: 4 },
-  divider: { height: 1, backgroundColor: '#e9ecef', marginVertical: 4 },
-  targetCard: { backgroundColor: '#e7f1ff', borderRadius: 10, padding: 16, borderWidth: 1, borderColor: '#b6d4fe' },
-  targetTitle: { fontSize: 15, fontWeight: 'bold', color: '#055160', marginBottom: 4 },
-  targetDescription: { fontSize: 13, color: '#084298' },
+  label: { fontSize: 13, color: COLORS.textSecondary, textTransform: 'uppercase', fontWeight: 'bold' },
+  value: { fontSize: 15, fontWeight: 'bold', color: COLORS.textPrimary, marginTop: 4 },
+  divider: { height: 1, backgroundColor: COLORS.border, marginVertical: 4 },
+  targetCard: { backgroundColor: COLORS.background, borderRadius: 10, padding: 16, borderWidth: 1, borderColor: COLORS.border },
+  targetTitle: { fontSize: 15, fontWeight: 'bold', color: COLORS.secondary, marginBottom: 4 },
+  targetDescription: { fontSize: 13, color: COLORS.primaryDark },
   boldText: { fontWeight: 'bold' },
-  attendanceCard: { backgroundColor: '#fff', borderRadius: 10, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: '#dee2e6' },
+  attendanceCard: { backgroundColor: COLORS.cardBg, borderRadius: 10, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: COLORS.border },
   attendanceSummary: { flexDirection: 'row', justifyContent: 'space-around' },
   metric: { alignItems: 'center', paddingVertical: 8 },
-  metricValue: { fontSize: 22, fontWeight: 'bold', color: '#212529' },
-  metricLabel: { fontSize: 13, color: '#6c757d', marginTop: 4 },
-  standingText: { fontSize: 14, color: '#495057', marginTop: 12 },
-  subjectRow: { backgroundColor: '#fff', borderRadius: 10, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: '#dee2e6', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  metricValue: { fontSize: 22, fontWeight: 'bold', color: COLORS.textPrimary },
+  metricLabel: { fontSize: 13, color: COLORS.textSecondary, marginTop: 4 },
+  standingText: { fontSize: 14, color: COLORS.textSecondary, marginTop: 12 },
+  subjectRow: { backgroundColor: COLORS.cardBg, borderRadius: 10, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: COLORS.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   subjectInfo: { flex: 1, paddingRight: 12 },
-  subjectCode: { fontSize: 12, fontWeight: 'bold', color: '#6c757d' },
-  subjectName: { fontSize: 15, fontWeight: '600', color: '#212529', marginTop: 3 },
+  subjectCode: { fontSize: 12, fontWeight: 'bold', color: COLORS.textSecondary },
+  subjectName: { fontSize: 15, fontWeight: '600', color: COLORS.textPrimary, marginTop: 3 },
   subjectPercentage: { fontSize: 16, fontWeight: 'bold' },
-  criticalText: { color: '#dc3545' },
-  safeText: { color: '#28a745' },
-  emptyText: { color: '#6c757d', textAlign: 'center', marginBottom: 12 }
+  criticalText: { color: COLORS.danger },
+  safeText: { color: COLORS.success },
+  emptyText: { color: COLORS.textSecondary, textAlign: 'center', marginBottom: 12 }
 });

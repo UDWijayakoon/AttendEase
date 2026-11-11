@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { getSubjects, getAttendanceLogs, calculateSubjectStats } from '../storage';
+import { COLORS } from '../theme';
 
 export default function DashboardScreen({ navigation }) {
   const [subjects, setSubjects] = useState([]);
@@ -87,26 +88,26 @@ export default function DashboardScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8f9fa', paddingHorizontal: 16, paddingTop: 50 },
+  container: { flex: 1, backgroundColor: COLORS.background, paddingHorizontal: 16, paddingTop: 50 },
   headerContainer: { marginBottom: 16 },
-  headerTitle: { fontSize: 24, fontWeight: 'bold', color: '#333' },
-  headerSubtitle: { fontSize: 14, color: '#666', marginTop: 2 },
+  headerTitle: { fontSize: 24, fontWeight: 'bold', color: COLORS.textPrimary },
+  headerSubtitle: { fontSize: 14, color: COLORS.textSecondary, marginTop: 2 },
   actionRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
-  primaryButton: { flex: 1, backgroundColor: '#007AFF', padding: 12, borderRadius: 8, alignItems: 'center', marginRight: 8 },
-  secondaryButton: { flex: 1, backgroundColor: '#e9ecef', padding: 12, borderRadius: 8, alignItems: 'center', marginLeft: 8 },
-  buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
-  secondaryButtonText: { color: '#333', fontWeight: 'bold', fontSize: 16 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10, color: '#444' },
+  primaryButton: { flex: 1, backgroundColor: COLORS.primary, padding: 12, borderRadius: 8, alignItems: 'center', marginRight: 8 },
+  secondaryButton: { flex: 1, backgroundColor: COLORS.border, padding: 12, borderRadius: 8, alignItems: 'center', marginLeft: 8 },
+  buttonText: { color: COLORS.cardBg, fontWeight: 'bold', fontSize: 16 },
+  secondaryButtonText: { color: COLORS.textPrimary, fontWeight: 'bold', fontSize: 16 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10, color: COLORS.textSecondary },
   listContainer: { paddingBottom: 20 },
-  card: { backgroundColor: '#fff', borderRadius: 10, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: '#dee2e6', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 5, elevation: 2 },
-  safeCard: { borderLeftWidth: 6, borderLeftColor: '#28a745' },
-  criticalCard: { borderLeftWidth: 6, borderLeftColor: '#dc3545' },
+  card: { backgroundColor: COLORS.cardBg, borderRadius: 10, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: COLORS.border, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 5, elevation: 2 },
+  safeCard: { borderLeftWidth: 6, borderLeftColor: COLORS.success },
+  criticalCard: { borderLeftWidth: 6, borderLeftColor: COLORS.danger },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  subjectCode: { fontSize: 16, fontWeight: 'bold', color: '#555' },
-  subjectName: { fontSize: 18, fontWeight: '600', color: '#222', marginVertical: 4 },
+  subjectCode: { fontSize: 16, fontWeight: 'bold', color: COLORS.textSecondary },
+  subjectName: { fontSize: 18, fontWeight: '600', color: COLORS.textPrimary, marginVertical: 4 },
   percentageText: { fontSize: 18, fontWeight: 'bold' },
-  textSafe: { color: '#28a745' },
-  textCritical: { color: '#dc3545' },
-  statsText: { fontSize: 14, color: '#666', marginTop: 4 },
-  warningText: { fontSize: 12, color: '#dc3545', fontWeight: 'bold', marginTop: 6 }
+  textSafe: { color: COLORS.success },
+  textCritical: { color: COLORS.danger },
+  statsText: { fontSize: 14, color: COLORS.textSecondary, marginTop: 4 },
+  warningText: { fontSize: 12, color: COLORS.danger, fontWeight: 'bold', marginTop: 6 }
 });
