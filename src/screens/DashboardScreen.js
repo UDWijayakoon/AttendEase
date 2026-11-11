@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, RefreshControl, ScrollView } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { getSubjects, getAttendanceLogs, calculateSubjectStats } from '../storage';
 import { COLORS } from '../theme';
@@ -9,7 +9,6 @@ export default function DashboardScreen({ navigation }) {
   const [logs, setLogs] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Load data whenever the screen comes into focus
   const loadData = async () => {
     setRefreshing(true);
     const loadedSubjects = await getSubjects();
@@ -25,13 +24,17 @@ export default function DashboardScreen({ navigation }) {
     }, [])
   );
 
-  // Render individual subject card
+  const criticalSubjects = subjects.filter(sub => {
+    const stats = calculateSubjectStats(sub.id, logs);
+    return stats.isCritical;
+  });
+
   const renderSubjectCard = ({ item }) => {
     const stats = calculateSubjectStats(item.id, logs);
 
     return (
       <TouchableOpacity 
-        style={[styles.card, stats.isCritical ? styles.criticalCard : styles.safeCard]}
+        style={[styles.subjectCard, stats.isCritical ? styles.criticalBorder : styles.safeBorder]}
         onPress={() => navigation.navigate('SubjectDetail', { subject: item })}
       >
         <View style={styles.cardHeader}>
@@ -41,73 +44,84 @@ export default function DashboardScreen({ navigation }) {
           </Text>
         </View>
         <Text style={styles.subjectName}>{item.name}</Text>
-        <Text style={styles.statsText}>
-          Attended: {stats.totalAttended} / Conducted: {stats.totalConducted}
-        </Text>
+
         {stats.isCritical && (
-          <Text style={styles.warningText}>⚠️ Below 80% Threshold!</Text>
+          <View style={styles.warningAlertBadge}>
+            <Text style={styles.warningAlertText}>⚠️ DANGER: Below 80% Requirement</Text>
+          </View>
         )}
+
+        <Text style={styles.statsDetail}>
+          Attended: {stats.totalAttended} / {stats.totalConducted} sessions
+        </Text>
       </TouchableOpacity>
     );
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>AttendEase Dashboard</Text>
-        <Text style={styles.headerSubtitle}>Target Threshold: 80%</Text>
-      </View>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadData} />}
+    >
+      {/* Critical Status Alert Banner */}
+      {criticalSubjects.length > 0 && (
+        <View style={styles.dangerBanner}>
+          <Text style={styles.dangerBannerTitle}>🚨 Academic Warning Notice</Text>
+          <Text style={styles.dangerBannerText}>
+            You have {criticalSubjects.length} subject(s) running below the mandatory 80% attendance threshold! Immediate attendance required.
+          </Text>
+        </View>
+      )}
 
+      {/* Action Shortcuts Header */}
       <View style={styles.actionRow}>
-        <TouchableOpacity 
-          style={styles.primaryButton}
-          onPress={() => navigation.navigate('DailyLog')}
-        >
-          <Text style={styles.buttonText}>+ Log Attendance</Text>
+        <TouchableOpacity style={styles.actionBtnPrimary} onPress={() => navigation.navigate('Log')}>
+          <Text style={styles.actionBtnText}>+ Log Attendance</Text>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.secondaryButton}
-          onPress={() => navigation.navigate('Timetable')}
-        >
-          <Text style={styles.secondaryButtonText}>Timetable</Text>
+        <TouchableOpacity style={styles.actionBtnSecondary} onPress={() => navigation.navigate('Timetable')}>
+          <Text style={styles.actionBtnSecondaryText}>📅 Timetable</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.actionBtnIcon} onPress={() => navigation.navigate('Settings')}>
+          <Text style={styles.actionBtnSecondaryText}>⚙️</Text>
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.sectionTitle}>Your Subjects</Text>
+      <Text style={styles.screenTitle}>Subject Overview</Text>
 
       <FlatList
         data={subjects}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         renderItem={renderSubjectCard}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadData} />}
-        contentContainerStyle={styles.listContainer}
+        scrollEnabled={false}
+        ListEmptyComponent={<Text style={styles.emptyText}>No subjects registered.</Text>}
       />
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background, paddingHorizontal: 16, paddingTop: 50 },
-  headerContainer: { marginBottom: 16 },
-  headerTitle: { fontSize: 24, fontWeight: 'bold', color: COLORS.textPrimary },
-  headerSubtitle: { fontSize: 14, color: COLORS.textSecondary, marginTop: 2 },
-  actionRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
-  primaryButton: { flex: 1, backgroundColor: COLORS.primary, padding: 12, borderRadius: 8, alignItems: 'center', marginRight: 8 },
-  secondaryButton: { flex: 1, backgroundColor: COLORS.border, padding: 12, borderRadius: 8, alignItems: 'center', marginLeft: 8 },
-  buttonText: { color: COLORS.cardBg, fontWeight: 'bold', fontSize: 16 },
-  secondaryButtonText: { color: COLORS.textPrimary, fontWeight: 'bold', fontSize: 16 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10, color: COLORS.textSecondary },
-  listContainer: { paddingBottom: 20 },
-  card: { backgroundColor: COLORS.cardBg, borderRadius: 10, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: COLORS.border, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 5, elevation: 2 },
-  safeCard: { borderLeftWidth: 6, borderLeftColor: COLORS.success },
-  criticalCard: { borderLeftWidth: 6, borderLeftColor: COLORS.danger },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  subjectCode: { fontSize: 16, fontWeight: 'bold', color: COLORS.textSecondary },
-  subjectName: { fontSize: 18, fontWeight: '600', color: COLORS.textPrimary, marginVertical: 4 },
-  percentageText: { fontSize: 18, fontWeight: 'bold' },
+  container: { padding: 16, backgroundColor: COLORS.background, flexGrow: 1 },
+  dangerBanner: { backgroundColor: COLORS.dangerBg, borderWidth: 1, borderColor: '#FCA5A5', borderRadius: 12, padding: 16, marginBottom: 16 },
+  dangerBannerTitle: { fontSize: 16, fontWeight: 'bold', color: '#B91C1C', marginBottom: 4 },
+  dangerBannerText: { fontSize: 13, color: '#7F1D1D', lineHeight: 18 },
+  actionRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
+  actionBtnPrimary: { flex: 2, backgroundColor: COLORS.primary, paddingVertical: 10, borderRadius: 8, alignItems: 'center' },
+  actionBtnText: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 13 },
+  actionBtnSecondary: { flex: 2, backgroundColor: '#E0E7FF', paddingVertical: 10, borderRadius: 8, alignItems: 'center' },
+  actionBtnSecondaryText: { color: COLORS.primary, fontWeight: 'bold', fontSize: 13 },
+  actionBtnIcon: { flex: 1, backgroundColor: '#E2E8F0', paddingVertical: 10, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  screenTitle: { fontSize: 18, fontWeight: 'bold', color: COLORS.textPrimary, marginBottom: 12 },
+  subjectCard: { backgroundColor: COLORS.cardBg, borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: COLORS.border, borderLeftWidth: 6, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 3, elevation: 2 },
+  safeBorder: { borderLeftColor: COLORS.success },
+  criticalBorder: { borderLeftColor: COLORS.danger },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  subjectCode: { fontSize: 13, fontWeight: 'bold', color: COLORS.textSecondary, textTransform: 'uppercase' },
+  percentageText: { fontSize: 16, fontWeight: 'bold' },
   textSafe: { color: COLORS.success },
   textCritical: { color: COLORS.danger },
-  statsText: { fontSize: 14, color: COLORS.textSecondary, marginTop: 4 },
-  warningText: { fontSize: 12, color: COLORS.danger, fontWeight: 'bold', marginTop: 6 }
+  subjectName: { fontSize: 17, fontWeight: 'bold', color: COLORS.textPrimary, marginBottom: 6 },
+  warningAlertBadge: { backgroundColor: COLORS.dangerBg, paddingVertical: 4, paddingHorizontal: 8, borderRadius: 6, marginBottom: 8, alignSelf: 'flex-start' },
+  warningAlertText: { fontSize: 11, fontWeight: 'bold', color: COLORS.danger },
+  statsDetail: { fontSize: 13, color: COLORS.textSecondary },
+  emptyText: { textAlign: 'center', color: COLORS.textSecondary, marginTop: 40 }
 });

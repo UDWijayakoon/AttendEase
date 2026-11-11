@@ -4,21 +4,28 @@ import AppNavigator from './src/navigation/AppNavigator';
 import SplashScreen from './src/screens/SplashScreen';
 
 export default function App() {
-  const [isReady, setIsReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
+    let timeoutId;
 
-    initializeData().then(() => {
-      if (isMounted) {
-        setIsReady(true);
-      }
-    });
+    async function prepareApp() {
+      await initializeData();
+      timeoutId = setTimeout(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }, 1800);
+    }
+
+    prepareApp();
 
     return () => {
       isMounted = false;
+      clearTimeout(timeoutId);
     };
   }, []);
 
-  return isReady ? <AppNavigator /> : <SplashScreen />;
+  return isLoading ? <SplashScreen /> : <AppNavigator />;
 }
