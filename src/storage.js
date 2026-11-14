@@ -3,11 +3,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const SUBJECTS_KEY = '@attendease_subjects';
 const LOGS_KEY = '@attendease_logs';
 const TIMETABLE_KEY = '@attendease_timetable';
+const USER_PROFILE_KEY = '@attendease_user_profile';
 
 const INITIAL_SUBJECTS = [
   { id: '1', code: 'ICT3101', name: 'Software Engineering', targetPercentage: 80 },
   { id: '2', code: 'ICT3102', name: 'Database Management Systems', targetPercentage: 80 },
-  { id: '3', code: 'ICT3103', name: 'Computer Networks', targetPercentage: 80 }
+  { id: '3', code: 'ICT3103', name: 'Computer Networks', targetPercentage: 80 },
+  { id: '4', code: 'IT3112', name: 'Computer Security', targetPercentage: 80 }
 ];
 
 const INITIAL_LOGS = [
@@ -39,13 +41,73 @@ export const initializeData = async () => {
 };
 
 export const resetData = async () => {
-  await AsyncStorage.multiRemove([SUBJECTS_KEY, LOGS_KEY, TIMETABLE_KEY]);
+  await AsyncStorage.multiRemove([SUBJECTS_KEY, LOGS_KEY, TIMETABLE_KEY, USER_PROFILE_KEY]);
   await AsyncStorage.multiSet([
     [SUBJECTS_KEY, JSON.stringify(INITIAL_SUBJECTS)],
     [LOGS_KEY, JSON.stringify(INITIAL_LOGS)],
     [TIMETABLE_KEY, JSON.stringify(INITIAL_TIMETABLE)]
   ]);
 };
+
+// ==================== USER PROFILE & ACCOUNT PROVISIONING ====================
+
+export const getUserProfile = async () => {
+  try {
+    const json = await AsyncStorage.getItem(USER_PROFILE_KEY);
+    return json ? JSON.parse(json) : null;
+  } catch (e) {
+    console.error('Error fetching user profile', e);
+    return null;
+  }
+};
+
+export const provisionUserAccount = async ({ fullName, regNumber, degree, institution, academicLevel }) => {
+  try {
+    const existing = await getUserProfile();
+    if (existing && existing.regNumber.toLowerCase() === regNumber.trim().toLowerCase()) {
+      return { profile: existing, isNew: false };
+    }
+
+    const cleanName = fullName.trim();
+    const initials = cleanName
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+
+    const newProfile = {
+      id: `USR-${Date.now()}`,
+      fullName: cleanName,
+      initials: initials || 'ST',
+      regNumber: regNumber.trim().toUpperCase(),
+      degree: degree.trim() || 'BSc in Information & Communication Technology',
+      institution: institution.trim() || 'University of Vavuniya',
+      academicLevel: academicLevel.trim() || 'Year 3 - Semester I',
+      minThreshold: 80,
+      createdAt: new Date().toISOString(),
+      status: 'Active Enrolled',
+    };
+
+    await AsyncStorage.setItem(USER_PROFILE_KEY, JSON.stringify(newProfile));
+    await initializeData();
+    return { profile: newProfile, isNew: true };
+  } catch (e) {
+    console.error('Error provisioning user account', e);
+    throw e;
+  }
+};
+
+export const clearUserSession = async () => {
+  try {
+    await AsyncStorage.removeItem(USER_PROFILE_KEY);
+  } catch (e) {
+    console.error('Error clearing session', e);
+    throw e;
+  }
+};
+
+// ==================== SUBJECTS & ATTENDANCE ====================
 
 export const getSubjects = async () => {
   try {

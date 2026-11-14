@@ -4,19 +4,10 @@ import { useFocusEffect } from '@react-navigation/native';
 import { getAttendanceLogs, getSubjects, calculateSubjectStats } from '../storage';
 import { COLORS } from '../theme';
 
-export default function ProfileScreen() {
+export default function ProfileScreen({ userProfile }) {
   const [subjects, setSubjects] = useState([]);
   const [logs, setLogs] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
-
-  const studentInfo = {
-    name: 'Uthsara',
-    regNo: '2022ICT70',
-    degree: 'BSc in Information & Communication Technology',
-    university: 'University of Vavuniya',
-    semester: 'Year 3 - Semester I',
-    status: 'Active Enrolled'
-  };
 
   const loadData = async () => {
     setRefreshing(true);
@@ -54,12 +45,12 @@ export default function ProfileScreen() {
       {/* Profile Header */}
       <View style={styles.profileHeaderCard}>
         <View style={styles.avatarPlaceholder}>
-          <Text style={styles.avatarText}>{studentInfo.name.charAt(0)}</Text>
+          <Text style={styles.avatarText}>{userProfile.initials || userProfile.fullName.charAt(0)}</Text>
         </View>
-        <Text style={styles.studentName}>{studentInfo.name}</Text>
-        <Text style={styles.regNo}>{studentInfo.regNo}</Text>
+        <Text style={styles.studentName}>{userProfile.fullName}</Text>
+        <Text style={styles.regNo}>{userProfile.regNumber}</Text>
         <View style={styles.statusBadge}>
-          <Text style={styles.statusText}>{studentInfo.status}</Text>
+          <Text style={styles.statusText}>{userProfile.status}</Text>
         </View>
       </View>
 
@@ -69,19 +60,19 @@ export default function ProfileScreen() {
       <View style={styles.infoCard}>
         <View style={styles.infoRow}>
           <Text style={styles.label}>Degree Program</Text>
-          <Text style={styles.value}>{studentInfo.degree}</Text>
+          <Text style={styles.value}>{userProfile.degree}</Text>
         </View>
         <View style={styles.divider} />
 
         <View style={styles.infoRow}>
           <Text style={styles.label}>Institution</Text>
-          <Text style={styles.value}>{studentInfo.university}</Text>
+          <Text style={styles.value}>{userProfile.institution}</Text>
         </View>
         <View style={styles.divider} />
 
         <View style={styles.infoRow}>
           <Text style={styles.label}>Current Academic Level</Text>
-          <Text style={styles.value}>{studentInfo.semester}</Text>
+          <Text style={styles.value}>{userProfile.academicLevel}</Text>
         </View>
       </View>
 

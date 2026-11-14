@@ -3,14 +3,24 @@ import { StyleSheet, Text, View, Switch, TouchableOpacity, Alert, ScrollView } f
 import { resetData } from '../storage';
 import { COLORS } from '../theme';
 
-export default function SettingsScreen({ navigation }) {
+export default function SettingsScreen({ onLogout }) {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [offlineSync, setOfflineSync] = useState(true);
+
+  const handleLogout = async () => {
+    try {
+      await onLogout();
+      return true;
+    } catch (e) {
+      Alert.alert('Sign Out Error', 'Unable to sign out. Please try again.');
+      return false;
+    }
+  };
 
   const handleResetData = () => {
     Alert.alert(
       'Reset All Data',
-      'This will clear all custom subjects, logs, and timetable data, restoring default mock data. Are you sure?',
+      'This will clear your profile and local attendance data, then restore the sample data. You will need to set up your profile again. Are you sure?',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -19,9 +29,13 @@ export default function SettingsScreen({ navigation }) {
           onPress: async () => {
             try {
               await resetData();
-              Alert.alert('Success', 'Your data has been restored to the default sample data.');
             } catch (e) {
               Alert.alert('Error', 'Failed to reset app data. Please try again.');
+              return;
+            }
+
+            if (await handleLogout()) {
+              Alert.alert('Success', 'Your data has been restored to the default sample data.');
             }
           }
         }
@@ -67,7 +81,10 @@ export default function SettingsScreen({ navigation }) {
         <Text style={styles.sectionHeader}>Data Management</Text>
 
         <TouchableOpacity style={styles.dangerButton} onPress={handleResetData}>
-          <Text style={styles.dangerButtonText}>⚠️ Reset All Local Data</Text>
+          <Text style={styles.dangerButtonText}>Reset All Local Data</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutButtonText}>Sign Out</Text>
         </TouchableOpacity>
       </View>
 
@@ -92,6 +109,8 @@ const styles = StyleSheet.create({
   divider: { height: 1, backgroundColor: COLORS.border, marginVertical: 8 },
   dangerButton: { backgroundColor: COLORS.dangerBg, borderWidth: 1, borderColor: COLORS.dangerBg, padding: 12, borderRadius: 8, alignItems: 'center' },
   dangerButtonText: { color: COLORS.danger, fontWeight: 'bold', fontSize: 14 },
+  logoutButton: { padding: 12, alignItems: 'center', marginTop: 8 },
+  logoutButtonText: { color: COLORS.textSecondary, fontWeight: 'bold', fontSize: 14 },
   versionCard: { alignItems: 'center', marginTop: 20, paddingBottom: 20 },
   versionTitle: { fontSize: 14, fontWeight: 'bold', color: COLORS.textSecondary },
   versionSubtitle: { fontSize: 12, color: COLORS.textSecondary, marginTop: 4, textAlign: 'center' }
