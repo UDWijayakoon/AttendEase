@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { clearUserSession, initializeData, getUserProfile } from './src/storage';
+import { initializeData, getUserProfile, clearUserSession } from './src/storage';
 import AppNavigator from './src/navigation/AppNavigator';
 import SplashScreen from './src/screens/SplashScreen';
 import LoginScreen from './src/screens/LoginScreen';
+import { AuthContext } from './src/AuthContext';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -32,7 +33,7 @@ export default function App() {
     };
   }, []);
 
-  const handleLogout = async () => {
+  const handleSignOut = async () => {
     await clearUserSession();
     setUserProfile(null);
   };
@@ -45,5 +46,9 @@ export default function App() {
     return <LoginScreen onLoginSuccess={(profile) => setUserProfile(profile)} />;
   }
 
-  return <AppNavigator userProfile={userProfile} onLogout={handleLogout} />;
+  return (
+    <AuthContext.Provider value={{ userProfile, signOut: handleSignOut }}>
+      <AppNavigator />
+    </AuthContext.Provider>
+  );
 }

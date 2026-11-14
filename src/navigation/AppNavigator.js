@@ -20,7 +20,7 @@ const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 
-function MainTabNavigator({ userProfile }) {
+function MainTabNavigator() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -53,14 +53,12 @@ function MainTabNavigator({ userProfile }) {
       <Tab.Screen name="Subjects" component={SubjectsScreen} />
       <Tab.Screen name="Calendar" component={CalendarScreen} />
       <Tab.Screen name="Analytics" component={AnalyticsScreen} />
-      <Tab.Screen name="Profile">
-        {props => <ProfileScreen {...props} userProfile={userProfile} />}
-      </Tab.Screen>
+      <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
 }
 
-export default function AppNavigator({ userProfile, onLogout }) {
+export default function AppNavigator() {
   return (
     <NavigationContainer
       theme={{
@@ -84,15 +82,11 @@ export default function AppNavigator({ userProfile, onLogout }) {
           headerTitleStyle: { fontWeight: 'bold' },
         }}
       >
-        <Stack.Screen name="MainTabs" options={{ headerShown: false }}>
-          {props => <MainTabNavigator {...props} userProfile={userProfile} />}
-        </Stack.Screen>
+        <Stack.Screen name="MainTabs" component={MainTabNavigator} options={{ headerShown: false }} />
         <Stack.Screen name="SubjectDetail" component={SubjectDetailScreen} options={{ title: 'Subject Details' }} />
         <Stack.Screen name="Log" component={DailyLogScreen} options={{ title: 'Log Attendance' }} />
         <Stack.Screen name="Timetable" component={TimetableScreen} options={{ title: 'Weekly Timetable' }} />
-        <Stack.Screen name="Settings" options={{ title: 'Settings & Preferences' }}>
-          {props => <SettingsScreen {...props} onLogout={onLogout} />}
-        </Stack.Screen>
+        <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Settings & Preferences' }} />
         <Stack.Screen name="AddEdit" component={AddEditScreen} options={{ title: 'Add / Edit Entry' }} />
       </Stack.Navigator>
     </NavigationContainer>

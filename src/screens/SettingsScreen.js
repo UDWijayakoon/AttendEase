@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, Switch, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { resetData } from '../storage';
+import { useAuth } from '../AuthContext';
 import { COLORS } from '../theme';
 
-export default function SettingsScreen({ onLogout }) {
+export default function SettingsScreen() {
+  const { signOut } = useAuth();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [offlineSync, setOfflineSync] = useState(true);
 
   const handleLogout = async () => {
     try {
-      await onLogout();
+      await signOut();
       return true;
     } catch (e) {
       Alert.alert('Sign Out Error', 'Unable to sign out. Please try again.');
