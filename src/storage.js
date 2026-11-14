@@ -192,6 +192,6 @@ export const calculateSubjectStats = (subjectId, logs) => {
     totalConducted,
     totalAttended,
     percentage: parseFloat(percentage),
-    isCritical: parseFloat(percentage) < 80.0
+    isCritical: totalAttended * 5 < totalConducted * 4
   };
 };
