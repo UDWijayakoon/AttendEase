@@ -14,11 +14,11 @@ import DailyLogScreen from '../screens/DailyLogScreen';
 import TimetableScreen from '../screens/TimetableScreen';
 import AddEditScreen from '../screens/AddEditScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import MandatoryDatesScreen from '../screens/MandatoryDatesScreen';
 import { COLORS } from '../theme';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
-
 
 function MainTabNavigator() {
   return (
@@ -41,6 +41,7 @@ function MainTabNavigator() {
           let iconName;
           if (route.name === 'Dashboard') iconName = focused ? 'home' : 'home-outline';
           else if (route.name === 'Subjects') iconName = focused ? 'book' : 'book-outline';
+          else if (route.name === 'MandatoryDates') iconName = focused ? 'calendar-number' : 'calendar-number-outline';
           else if (route.name === 'Calendar') iconName = focused ? 'calendar' : 'calendar-outline';
           else if (route.name === 'Analytics') iconName = focused ? 'stats-chart' : 'stats-chart-outline';
           else if (route.name === 'Profile') iconName = focused ? 'person' : 'person-outline';
@@ -51,6 +52,7 @@ function MainTabNavigator() {
     >
       <Tab.Screen name="Dashboard" component={DashboardScreen} />
       <Tab.Screen name="Subjects" component={SubjectsScreen} />
+      <Tab.Screen name="MandatoryDates" component={MandatoryDatesScreen} options={{ title: 'ICAs & Exams' }} />
       <Tab.Screen name="Calendar" component={CalendarScreen} />
       <Tab.Screen name="Analytics" component={AnalyticsScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
