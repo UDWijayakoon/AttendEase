@@ -143,6 +143,19 @@ export const addTimetableSlot = async (slot) => {
   }
 };
 
+export const deleteTimetableSlot = async (slotId) => {
+  try {
+    const jsonValue = await AsyncStorage.getItem(TIMETABLE_KEY);
+    const current = jsonValue != null ? JSON.parse(jsonValue) : [];
+    const updated = current.filter(slot => slot.id !== slotId);
+    await AsyncStorage.setItem(TIMETABLE_KEY, JSON.stringify(updated));
+    return updated;
+  } catch (e) {
+    console.error('Error deleting timetable slot', e);
+    throw e;
+  }
+};
+
 export const calculateSubjectStats = (subjectId, logs) => {
   const subjectLogs = logs.filter(l => l.subjectId === subjectId);
   const totalConducted = subjectLogs.length;
