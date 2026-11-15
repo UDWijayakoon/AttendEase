@@ -4,7 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { Directory, File, Paths } from 'expo-file-system';
-import { getMandatoryDates, addMandatoryDate, getSubjects, getAbsenceEvidence, saveAbsenceEvidence } from '../storage';
+import { getMandatoryDates, addMandatoryDate, deleteMandatoryDate, getSubjects, getAbsenceEvidence, saveAbsenceEvidence } from '../storage';
 import { COLORS } from '../theme';
 
 export default function MandatoryDatesScreen() {
@@ -70,13 +70,36 @@ export default function MandatoryDatesScreen() {
     }
   };
 
+  const handleDeleteMandatoryDate = (id, titleText) => {
+    Alert.alert(
+      'Delete Assessment',
+      `Are you sure you want to remove "${titleText}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const updated = await deleteMandatoryDate(id);
+              setMandatoryDates(updated);
+              Alert.alert('Success', 'Assessment removed successfully.');
+            } catch (e) {
+              Alert.alert('Error', 'Failed to delete assessment.');
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const handleUploadRealEvidence = async (mandatoryDate) => {
     setIsUploadingEvidence(true);
-    let copiedFileUri;
+    let destinationFile;
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: ['application/pdf', 'image/*'],
-        copyToCacheDirectory: true,
+        copyToCacheDirectory: false, // Keep Android content:// URI so File API can read it directly
       });
 
       if (result.canceled) return;
@@ -87,14 +110,18 @@ export default function MandatoryDatesScreen() {
       }
 
       const evidenceDirectory = new Directory(Paths.document, 'absence-evidence');
-      evidenceDirectory.create({ idempotent: true, intermediates: true });
+      if (!evidenceDirectory.exists) {
+        evidenceDirectory.create({ intermediates: true });
+      }
 
-      const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_') || 'evidence';
+      const safeFileName = (file.name || 'evidence').replace(/[^a-zA-Z0-9._-]/g, '_');
       const storedFileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeFileName}`;
-      const storedFile = new File(file.uri);
-      const destinationFile = new File(evidenceDirectory, storedFileName);
-      await storedFile.copy(destinationFile);
-      copiedFileUri = destinationFile.uri;
+      destinationFile = new File(evidenceDirectory, storedFileName);
+
+      // Read bytes directly from the content:// URI and write to permanent app storage
+      const sourceFile = new File(file.uri);
+      const fileBytes = await sourceFile.bytes();
+      await destinationFile.write(fileBytes);
 
       const updated = await saveAbsenceEvidence({
         title: `Medical / Excuse for ${mandatoryDate.title}`,
@@ -106,13 +133,14 @@ export default function MandatoryDatesScreen() {
         mimeType: file.mimeType,
         fileSize: file.size,
       });
-      copiedFileUri = null;
+
       setEvidenceList(updated);
       Alert.alert('Success', `Saved "${file.name}" to this device's evidence folder.`);
     } catch (e) {
-      if (copiedFileUri) {
+      console.error('Evidence upload error:', e);
+      if (destinationFile && destinationFile.exists) {
         try {
-          new File(copiedFileUri).delete();
+          destinationFile.delete();
         } catch (cleanupError) {
           console.error('Failed to remove unsaved absence evidence file', cleanupError);
         }
@@ -150,7 +178,18 @@ export default function MandatoryDatesScreen() {
                   {item.type}
                 </Text>
               </View>
-              <Text style={styles.subjectCodeTag}>{item.subjectCode}</Text>
+              <View style={styles.cardHeaderRight}>
+                <Text style={styles.subjectCodeTag}>{item.subjectCode}</Text>
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel={`Delete ${item.title}`}
+                  hitSlop={8}
+                  onPress={() => handleDeleteMandatoryDate(item.id, item.title)}
+                  style={styles.deleteIconBtn}
+                >
+                  <Ionicons name="trash-outline" size={18} color={COLORS.danger} />
+                </TouchableOpacity>
+              </View>
             </View>
             <Text style={styles.cardTitle}>{item.title}</Text>
             <View style={styles.dateRow}>
@@ -274,6 +313,8 @@ const styles = StyleSheet.create({
   sectionHeader: { fontSize: 17, fontWeight: 'bold', color: COLORS.textPrimary, marginBottom: 12 },
   card: { backgroundColor: COLORS.cardBg, borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: COLORS.border, shadowColor: '#0F172A', shadowOpacity: 0.04, shadowRadius: 4, elevation: 2 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  cardHeaderRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  deleteIconBtn: { padding: 4 },
   badge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
   icaBadge: { backgroundColor: '#E0E7FF' },
   examBadge: { backgroundColor: COLORS.dangerBg },

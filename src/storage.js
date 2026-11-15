@@ -271,6 +271,18 @@ export const addMandatoryDate = async (item) => {
   }
 };
 
+export const deleteMandatoryDate = async (itemId) => {
+  try {
+    const current = await getMandatoryDates();
+    const updated = current.filter(item => item.id !== itemId);
+    await AsyncStorage.setItem(MANDATORY_DATES_KEY, JSON.stringify(updated));
+    return updated;
+  } catch (e) {
+    console.error('Error deleting mandatory date', e);
+    throw e;
+  }
+};
+
 export const calculateSubjectStats = (subjectId, logs) => {
   const subjectLogs = logs.filter(l => l.subjectId === subjectId);
   const totalConducted = subjectLogs.length;
