@@ -74,6 +74,29 @@ export const addSubject = async (subject) => {
   }
 };
 
+export const deleteSubject = async (subjectId) => {
+  try {
+    const storedData = await AsyncStorage.multiGet([SUBJECTS_KEY, LOGS_KEY, TIMETABLE_KEY]);
+    const currentSubjects = storedData[0][1] ? JSON.parse(storedData[0][1]) : [];
+    const currentLogs = storedData[1][1] ? JSON.parse(storedData[1][1]) : [];
+    const currentTimetable = storedData[2][1] ? JSON.parse(storedData[2][1]) : [];
+    const updatedSubjects = currentSubjects.filter(sub => sub.id !== subjectId);
+    const updatedLogs = currentLogs.filter(log => log.subjectId !== subjectId);
+    const updatedTimetable = currentTimetable.filter(slot => slot.subjectId !== subjectId);
+
+    await AsyncStorage.multiSet([
+      [SUBJECTS_KEY, JSON.stringify(updatedSubjects)],
+      [LOGS_KEY, JSON.stringify(updatedLogs)],
+      [TIMETABLE_KEY, JSON.stringify(updatedTimetable)]
+    ]);
+
+    return updatedSubjects;
+  } catch (e) {
+    console.error('Error deleting subject', e);
+    throw e;
+  }
+};
+
 export const getAttendanceLogs = async () => {
   try {
     const jsonValue = await AsyncStorage.getItem(LOGS_KEY);
