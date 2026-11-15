@@ -4,6 +4,8 @@ const SUBJECTS_KEY = '@attendease_subjects';
 const LOGS_KEY = '@attendease_logs';
 const TIMETABLE_KEY = '@attendease_timetable';
 const USER_PROFILE_KEY = '@attendease_user_profile';
+const EVIDENCE_KEY = '@attendease_evidence';
+const MANDATORY_DATES_KEY = '@attendease_mandatory_dates';
 
 const INITIAL_SUBJECTS = [
   { id: '1', code: 'ICT3101', name: 'Software Engineering', targetPercentage: 80 },
@@ -41,7 +43,7 @@ export const initializeData = async () => {
 };
 
 export const resetData = async () => {
-  await AsyncStorage.multiRemove([SUBJECTS_KEY, LOGS_KEY, TIMETABLE_KEY, USER_PROFILE_KEY]);
+  await AsyncStorage.multiRemove([SUBJECTS_KEY, LOGS_KEY, TIMETABLE_KEY, USER_PROFILE_KEY, EVIDENCE_KEY, MANDATORY_DATES_KEY]);
   await AsyncStorage.multiSet([
     [SUBJECTS_KEY, JSON.stringify(INITIAL_SUBJECTS)],
     [LOGS_KEY, JSON.stringify(INITIAL_LOGS)],
@@ -136,6 +138,29 @@ export const addSubject = async (subject) => {
   }
 };
 
+export const deleteSubject = async (subjectId) => {
+  try {
+    const storedData = await AsyncStorage.multiGet([SUBJECTS_KEY, LOGS_KEY, TIMETABLE_KEY]);
+    const currentSubjects = storedData[0][1] ? JSON.parse(storedData[0][1]) : [];
+    const currentLogs = storedData[1][1] ? JSON.parse(storedData[1][1]) : [];
+    const currentTimetable = storedData[2][1] ? JSON.parse(storedData[2][1]) : [];
+    const updatedSubjects = currentSubjects.filter(sub => sub.id !== subjectId);
+    const updatedLogs = currentLogs.filter(log => log.subjectId !== subjectId);
+    const updatedTimetable = currentTimetable.filter(slot => slot.subjectId !== subjectId);
+
+    await AsyncStorage.multiSet([
+      [SUBJECTS_KEY, JSON.stringify(updatedSubjects)],
+      [LOGS_KEY, JSON.stringify(updatedLogs)],
+      [TIMETABLE_KEY, JSON.stringify(updatedTimetable)]
+    ]);
+
+    return updatedSubjects;
+  } catch (e) {
+    console.error('Error deleting subject', e);
+    throw e;
+  }
+};
+
 export const getAttendanceLogs = async () => {
   try {
     const jsonValue = await AsyncStorage.getItem(LOGS_KEY);
@@ -178,6 +203,70 @@ export const addTimetableSlot = async (slot) => {
     return updated;
   } catch (e) {
     console.error('Error adding timetable slot', e);
+    throw e;
+  }
+};
+
+export const deleteTimetableSlot = async (slotId) => {
+  try {
+    const jsonValue = await AsyncStorage.getItem(TIMETABLE_KEY);
+    const current = jsonValue != null ? JSON.parse(jsonValue) : [];
+    const updated = current.filter(slot => slot.id !== slotId);
+    await AsyncStorage.setItem(TIMETABLE_KEY, JSON.stringify(updated));
+    return updated;
+  } catch (e) {
+    console.error('Error deleting timetable slot', e);
+    throw e;
+  }
+};
+
+// ==================== EVIDENCE FOLDER & MANDATORY DATES ====================
+
+export const getAbsenceEvidence = async () => {
+  try {
+    const json = await AsyncStorage.getItem(EVIDENCE_KEY);
+    return json ? JSON.parse(json) : [];
+  } catch (e) {
+    console.error('Error fetching absence evidence', e);
+    return [];
+  }
+};
+
+export const saveAbsenceEvidence = async (evidenceItem) => {
+  try {
+    const current = await getAbsenceEvidence();
+    const newItem = { ...evidenceItem, id: `EV-${Date.now()}`, uploadedAt: new Date().toISOString() };
+    const updated = [newItem, ...current];
+    await AsyncStorage.setItem(EVIDENCE_KEY, JSON.stringify(updated));
+    return updated;
+  } catch (e) {
+    console.error('Error saving absence evidence', e);
+    throw e;
+  }
+};
+
+export const getMandatoryDates = async () => {
+  try {
+    const json = await AsyncStorage.getItem(MANDATORY_DATES_KEY);
+    return json ? JSON.parse(json) : [
+      { id: 'm1', title: 'Software Engineering ICA 02 Submission', date: '2026-11-22', type: 'ICA', subjectCode: 'ICT3101' },
+      { id: 'm2', title: 'Computer Security Formal Mid-Exam', date: '2026-11-28', type: 'Exam', subjectCode: 'IT3112' }
+    ];
+  } catch (e) {
+    console.error('Error fetching mandatory dates', e);
+    return [];
+  }
+};
+
+export const addMandatoryDate = async (item) => {
+  try {
+    const current = await getMandatoryDates();
+    const newItem = { ...item, id: `MD-${Date.now()}` };
+    const updated = [newItem, ...current];
+    await AsyncStorage.setItem(MANDATORY_DATES_KEY, JSON.stringify(updated));
+    return updated;
+  } catch (e) {
+    console.error('Error adding mandatory date', e);
     throw e;
   }
 };

@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, TextInput, Alert, RefreshControl, ScrollView } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { getTimetable, getSubjects, addTimetableSlot } from '../storage';
+import { Ionicons } from '@expo/vector-icons';
+import { getTimetable, getSubjects, addTimetableSlot, deleteTimetableSlot } from '../storage';
 import { COLORS } from '../theme';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -58,6 +59,30 @@ export default function TimetableScreen() {
     }
   };
 
+  const handleDeleteSlot = (slot) => {
+    const subject = getSubjectDetails(slot.subjectId);
+    Alert.alert(
+      'Delete Slot',
+      `Are you sure you want to delete ${subject.code} on ${slot.day} at ${slot.time}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const updated = await deleteTimetableSlot(slot.id);
+              setTimetable(updated);
+              Alert.alert('Success', 'Timetable slot removed successfully.');
+            } catch (e) {
+              Alert.alert('Error', 'Failed to delete timetable slot.');
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const filteredSlots = timetable.filter(item => item.day === selectedDay);
 
   const getSubjectDetails = (subId) => {
@@ -71,7 +96,18 @@ export default function TimetableScreen() {
       <View style={styles.slotCard}>
         <View style={styles.slotHeader}>
           <Text style={styles.subjectCode}>{subject.code}</Text>
-          <Text style={styles.timeText}>{item.time}</Text>
+          <View style={styles.slotHeaderRight}>
+            <Text style={styles.timeText}>{item.time}</Text>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel={`Delete ${subject.code} on ${item.day} at ${item.time}`}
+              hitSlop={8}
+              onPress={() => handleDeleteSlot(item)}
+              style={styles.deleteBtn}
+            >
+              <Ionicons name="trash-outline" size={16} color={COLORS.danger} />
+            </TouchableOpacity>
+          </View>
         </View>
         <Text style={styles.subjectName}>{subject.name}</Text>
         <Text style={styles.roomText}>📍 Room: {item.room || 'TBD'}</Text>
@@ -131,6 +167,7 @@ export default function TimetableScreen() {
           <TextInput
             style={styles.input}
             placeholder="09:00 AM - 11:00 AM"
+            placeholderTextColor="#94A3B8"
             value={time}
             onChangeText={setTime}
           />
@@ -139,6 +176,7 @@ export default function TimetableScreen() {
           <TextInput
             style={styles.input}
             placeholder="Lab 3"
+            placeholderTextColor="#94A3B8"
             value={room}
             onChangeText={setRoom}
           />
@@ -204,8 +242,10 @@ const styles = StyleSheet.create({
   selectedDayHeader: { fontSize: 18, fontWeight: 'bold', color: COLORS.textPrimary, marginBottom: 10 },
   slotCard: { backgroundColor: COLORS.cardBg, borderRadius: 10, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: COLORS.border, borderLeftWidth: 5, borderLeftColor: COLORS.primary, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 3, elevation: 2 },
   slotHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  slotHeaderRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   subjectCode: { fontSize: 15, fontWeight: 'bold', color: COLORS.primary },
   timeText: { fontSize: 13, fontWeight: '600', color: COLORS.textSecondary },
+  deleteBtn: { padding: 4, backgroundColor: COLORS.dangerBg, borderRadius: 6 },
   subjectName: { fontSize: 17, fontWeight: 'bold', color: COLORS.textPrimary, marginBottom: 6 },
   roomText: { fontSize: 13, color: COLORS.textSecondary },
   emptyText: { textAlign: 'center', color: COLORS.textSecondary, marginTop: 30, fontSize: 15 }

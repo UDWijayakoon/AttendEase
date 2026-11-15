@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity, Alert, RefreshControl, ScrollView } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { getSubjects, addSubject, getAttendanceLogs, calculateSubjectStats } from '../storage';
+import { Ionicons } from '@expo/vector-icons';
+import { getSubjects, addSubject, deleteSubject, getAttendanceLogs, calculateSubjectStats } from '../storage';
 import { COLORS } from '../theme';
 
 export default function SubjectsScreen({ navigation }) {
@@ -53,25 +54,59 @@ export default function SubjectsScreen({ navigation }) {
     }
   };
 
+  const handleDeleteSubject = (subjectId, subjectName) => {
+    Alert.alert(
+      'Delete Subject',
+      `Are you sure you want to delete "${subjectName}"? Its attendance history and timetable entries will also be deleted.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const updated = await deleteSubject(subjectId);
+              setSubjects(updated);
+              Alert.alert('Success', 'Subject removed successfully.');
+            } catch (e) {
+              Alert.alert('Error', 'Failed to delete subject.');
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const renderSubjectItem = ({ item }) => {
     const stats = calculateSubjectStats(item.id, logs);
+    const openSubjectDetails = () => navigation.navigate('SubjectDetail', { subject: item });
 
     return (
-      <TouchableOpacity 
-        style={[styles.subjectCard, stats.isCritical ? styles.criticalBorder : styles.safeBorder]}
-        onPress={() => navigation.navigate('SubjectDetail', { subject: item })}
-      >
+      <View style={[styles.subjectCard, stats.isCritical ? styles.criticalBorder : styles.safeBorder]}>
         <View style={styles.cardHeader}>
-          <Text style={styles.subjectCode}>{item.code}</Text>
-          <Text style={[styles.percentageText, stats.isCritical ? styles.textCritical : styles.textSafe]}>
-            {stats.percentage}%
-          </Text>
+          <TouchableOpacity style={styles.subjectHeaderDetails} onPress={openSubjectDetails}>
+            <Text style={styles.subjectCode}>{item.code}</Text>
+            <Text style={[styles.percentageText, stats.isCritical ? styles.textCritical : styles.textSafe]}>
+              {stats.percentage}%
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel={`Delete ${item.name}`}
+            hitSlop={8}
+            onPress={() => handleDeleteSubject(item.id, item.name)}
+            style={styles.deleteBtn}
+          >
+            <Ionicons name="trash-outline" size={17} color={COLORS.danger} />
+          </TouchableOpacity>
         </View>
-        <Text style={styles.subjectName}>{item.name}</Text>
-        <Text style={styles.statsDetail}>
-          Attended: {stats.totalAttended} / {stats.totalConducted} sessions
-        </Text>
-      </TouchableOpacity>
+        <TouchableOpacity onPress={openSubjectDetails}>
+          <Text style={styles.subjectName}>{item.name}</Text>
+          <Text style={styles.statsDetail}>
+            Attended: {stats.totalAttended} / {stats.totalConducted} sessions
+          </Text>
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -86,6 +121,7 @@ export default function SubjectsScreen({ navigation }) {
         <TextInput
           style={styles.input}
           placeholder="Subject Code (e.g., ICT3104)"
+          placeholderTextColor="#94A3B8"
           value={code}
           onChangeText={setCode}
         />
@@ -93,6 +129,7 @@ export default function SubjectsScreen({ navigation }) {
         <TextInput
           style={styles.input}
           placeholder="Subject Name (e.g., Operating Systems)"
+          placeholderTextColor="#94A3B8"
           value={name}
           onChangeText={setName}
         />
@@ -100,6 +137,7 @@ export default function SubjectsScreen({ navigation }) {
         <TextInput
           style={styles.input}
           placeholder="Target % (default 80)"
+          placeholderTextColor="#94A3B8"
           value={targetPercentage}
           onChangeText={setTargetPercentage}
           keyboardType="numeric"
@@ -137,8 +175,10 @@ const styles = StyleSheet.create({
   safeBorder: { borderLeftColor: COLORS.success },
   criticalBorder: { borderLeftColor: COLORS.danger },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  subjectHeaderDetails: { flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginRight: 10 },
   subjectCode: { fontSize: 14, fontWeight: 'bold', color: COLORS.textSecondary, textTransform: 'uppercase' },
   percentageText: { fontSize: 16, fontWeight: 'bold' },
+  deleteBtn: { padding: 4, backgroundColor: COLORS.dangerBg, borderRadius: 6 },
   textSafe: { color: COLORS.success },
   textCritical: { color: COLORS.danger },
   subjectName: { fontSize: 18, fontWeight: 'bold', color: COLORS.textPrimary, marginBottom: 6 },
