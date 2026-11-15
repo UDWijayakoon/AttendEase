@@ -95,11 +95,11 @@ export default function MandatoryDatesScreen() {
 
   const handleUploadRealEvidence = async (mandatoryDate) => {
     setIsUploadingEvidence(true);
-    let copiedFileUri;
+    let destinationFile;
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: ['application/pdf', 'image/*'],
-        copyToCacheDirectory: true,
+        copyToCacheDirectory: false, // Keep Android content:// URI so File API can read it directly
       });
 
       if (result.canceled) return;
@@ -110,14 +110,18 @@ export default function MandatoryDatesScreen() {
       }
 
       const evidenceDirectory = new Directory(Paths.document, 'absence-evidence');
-      evidenceDirectory.create({ idempotent: true, intermediates: true });
+      if (!evidenceDirectory.exists) {
+        evidenceDirectory.create({ intermediates: true });
+      }
 
-      const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_') || 'evidence';
+      const safeFileName = (file.name || 'evidence').replace(/[^a-zA-Z0-9._-]/g, '_');
       const storedFileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeFileName}`;
-      const storedFile = new File(file.uri);
-      const destinationFile = new File(evidenceDirectory, storedFileName);
-      await storedFile.copy(destinationFile);
-      copiedFileUri = destinationFile.uri;
+      destinationFile = new File(evidenceDirectory, storedFileName);
+
+      // Read bytes directly from the content:// URI and write to permanent app storage
+      const sourceFile = new File(file.uri);
+      const fileBytes = await sourceFile.bytes();
+      await destinationFile.write(fileBytes);
 
       const updated = await saveAbsenceEvidence({
         title: `Medical / Excuse for ${mandatoryDate.title}`,
@@ -129,13 +133,14 @@ export default function MandatoryDatesScreen() {
         mimeType: file.mimeType,
         fileSize: file.size,
       });
-      copiedFileUri = null;
+
       setEvidenceList(updated);
       Alert.alert('Success', `Saved "${file.name}" to this device's evidence folder.`);
     } catch (e) {
-      if (copiedFileUri) {
+      console.error('Evidence upload error:', e);
+      if (destinationFile && destinationFile.exists) {
         try {
-          new File(copiedFileUri).delete();
+          destinationFile.delete();
         } catch (cleanupError) {
           console.error('Failed to remove unsaved absence evidence file', cleanupError);
         }
