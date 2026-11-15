@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { initializeData } from './src/storage';
+import { initializeData, getUserProfile, clearUserSession } from './src/storage';
 import AppNavigator from './src/navigation/AppNavigator';
 import SplashScreen from './src/screens/SplashScreen';
+import LoginScreen from './src/screens/LoginScreen';
+import { AuthContext } from './src/AuthContext';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -12,8 +15,11 @@ export default function App() {
 
     async function prepareApp() {
       await initializeData();
+      const existingProfile = await getUserProfile();
+
       timeoutId = setTimeout(() => {
         if (isMounted) {
+          setUserProfile(existingProfile);
           setIsLoading(false);
         }
       }, 1800);
@@ -27,5 +33,22 @@ export default function App() {
     };
   }, []);
 
-  return isLoading ? <SplashScreen /> : <AppNavigator />;
+  const handleSignOut = async () => {
+    await clearUserSession();
+    setUserProfile(null);
+  };
+
+  if (isLoading) {
+    return <SplashScreen />;
+  }
+
+  if (!userProfile) {
+    return <LoginScreen onLoginSuccess={(profile) => setUserProfile(profile)} />;
+  }
+
+  return (
+    <AuthContext.Provider value={{ userProfile, signOut: handleSignOut }}>
+      <AppNavigator />
+    </AuthContext.Provider>
+  );
 }

@@ -271,10 +271,10 @@ export const addMandatoryDate = async (item) => {
   }
 };
 
-export const deleteMandatoryDate = async (itemId) => {
+export const deleteMandatoryDate = async (id) => {
   try {
     const current = await getMandatoryDates();
-    const updated = current.filter(item => item.id !== itemId);
+    const updated = current.filter(item => item.id !== id);
     await AsyncStorage.setItem(MANDATORY_DATES_KEY, JSON.stringify(updated));
     return updated;
   } catch (e) {

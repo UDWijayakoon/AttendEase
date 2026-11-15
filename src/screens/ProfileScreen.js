@@ -1,22 +1,16 @@
 import React, { useCallback, useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, RefreshControl } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, RefreshControl, TouchableOpacity, Alert } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { getAttendanceLogs, getSubjects, calculateSubjectStats } from '../storage';
+import { useAuth } from '../AuthContext';
 import { COLORS } from '../theme';
 
 export default function ProfileScreen() {
+  const { userProfile, signOut } = useAuth();
   const [subjects, setSubjects] = useState([]);
   const [logs, setLogs] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
-
-  const studentInfo = {
-    name: 'Uthsara',
-    regNo: '2022ICT70',
-    degree: 'BSc in Information & Communication Technology',
-    university: 'University of Vavuniya',
-    semester: 'Year 3 - Semester I',
-    status: 'Active Enrolled'
-  };
 
   const loadData = async () => {
     setRefreshing(true);
@@ -38,6 +32,19 @@ export default function ProfileScreen() {
     }, [])
   );
 
+  const handleLogoutPress = () => {
+    Alert.alert(
+      'Sign Out & Switch Account',
+      'You will be returned to the student portal login screen. Your attendance logs will remain saved.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Sign Out', style: 'destructive', onPress: signOut },
+      ]
+    );
+  };
+
+  if (!userProfile) return null;
+
   const totalPresent = logs.filter(log => log.status === 'Present').length;
   const overallPercentage = logs.length > 0
     ? ((totalPresent / logs.length) * 100).toFixed(1)
@@ -54,12 +61,14 @@ export default function ProfileScreen() {
       {/* Profile Header */}
       <View style={styles.profileHeaderCard}>
         <View style={styles.avatarPlaceholder}>
-          <Text style={styles.avatarText}>{studentInfo.name.charAt(0)}</Text>
+          <Text style={styles.avatarText}>
+            {userProfile.initials || userProfile.fullName?.charAt(0) || 'ST'}
+          </Text>
         </View>
-        <Text style={styles.studentName}>{studentInfo.name}</Text>
-        <Text style={styles.regNo}>{studentInfo.regNo}</Text>
+        <Text style={styles.studentName}>{userProfile.fullName}</Text>
+        <Text style={styles.regNo}>{userProfile.regNumber}</Text>
         <View style={styles.statusBadge}>
-          <Text style={styles.statusText}>{studentInfo.status}</Text>
+          <Text style={styles.statusText}>{userProfile.status || 'Active Enrolled'}</Text>
         </View>
       </View>
 
@@ -69,19 +78,19 @@ export default function ProfileScreen() {
       <View style={styles.infoCard}>
         <View style={styles.infoRow}>
           <Text style={styles.label}>Degree Program</Text>
-          <Text style={styles.value}>{studentInfo.degree}</Text>
+          <Text style={styles.value}>{userProfile.degree}</Text>
         </View>
         <View style={styles.divider} />
 
         <View style={styles.infoRow}>
           <Text style={styles.label}>Institution</Text>
-          <Text style={styles.value}>{studentInfo.university}</Text>
+          <Text style={styles.value}>{userProfile.institution}</Text>
         </View>
         <View style={styles.divider} />
 
         <View style={styles.infoRow}>
           <Text style={styles.label}>Current Academic Level</Text>
-          <Text style={styles.value}>{studentInfo.semester}</Text>
+          <Text style={styles.value}>{userProfile.academicLevel}</Text>
         </View>
       </View>
 
@@ -93,7 +102,7 @@ export default function ProfileScreen() {
         </Text>
       </View>
 
-      <Text style={styles.sectionHeader}>Attendance Overview</Text>
+      <Text style={[styles.sectionHeader, { marginTop: 20 }]}>Attendance Overview</Text>
       <View style={styles.attendanceCard}>
         <View style={styles.attendanceSummary}>
           <View style={styles.metric}>
@@ -137,35 +146,41 @@ export default function ProfileScreen() {
       }) : (
         <Text style={styles.emptyText}>No subjects added yet.</Text>
       )}
+
+      {/* Sign Out / Switch Account Action */}
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogoutPress}>
+        <Ionicons name="log-out-outline" size={20} color={COLORS.danger} />
+        <Text style={styles.logoutButtonText}>Sign Out / Switch Student Account</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, backgroundColor: COLORS.background, flexGrow: 1 },
-  profileHeaderCard: { backgroundColor: COLORS.cardBg, borderRadius: 12, padding: 20, alignItems: 'center', marginBottom: 20, borderWidth: 1, borderColor: COLORS.border, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 3, elevation: 2 },
+  container: { padding: 16, backgroundColor: COLORS.background, flexGrow: 1, paddingBottom: 32 },
+  profileHeaderCard: { backgroundColor: COLORS.cardBg, borderRadius: 14, padding: 20, alignItems: 'center', marginBottom: 20, borderWidth: 1, borderColor: COLORS.border, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 3, elevation: 2 },
   avatarPlaceholder: { width: 80, height: 80, borderRadius: 40, backgroundColor: COLORS.primary, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
-  avatarText: { fontSize: 36, fontWeight: 'bold', color: COLORS.cardBg },
+  avatarText: { fontSize: 32, fontWeight: 'bold', color: COLORS.cardBg },
   studentName: { fontSize: 22, fontWeight: 'bold', color: COLORS.textPrimary },
   regNo: { fontSize: 14, color: COLORS.textSecondary, marginTop: 2, fontWeight: '600' },
   statusBadge: { backgroundColor: COLORS.successBg, paddingVertical: 4, paddingHorizontal: 12, borderRadius: 16, marginTop: 10 },
   statusText: { color: COLORS.success, fontWeight: 'bold', fontSize: 12 },
-  sectionHeader: { fontSize: 18, fontWeight: 'bold', color: COLORS.textPrimary, marginBottom: 12 },
-  infoCard: { backgroundColor: COLORS.cardBg, borderRadius: 10, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: COLORS.border },
+  sectionHeader: { fontSize: 17, fontWeight: 'bold', color: COLORS.textPrimary, marginBottom: 12 },
+  infoCard: { backgroundColor: COLORS.cardBg, borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: COLORS.border },
   infoRow: { paddingVertical: 8 },
-  label: { fontSize: 13, color: COLORS.textSecondary, textTransform: 'uppercase', fontWeight: 'bold' },
+  label: { fontSize: 11, color: COLORS.textSecondary, textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: 0.5 },
   value: { fontSize: 15, fontWeight: 'bold', color: COLORS.textPrimary, marginTop: 4 },
   divider: { height: 1, backgroundColor: COLORS.border, marginVertical: 4 },
-  targetCard: { backgroundColor: COLORS.background, borderRadius: 10, padding: 16, borderWidth: 1, borderColor: COLORS.border },
-  targetTitle: { fontSize: 15, fontWeight: 'bold', color: COLORS.secondary, marginBottom: 4 },
+  targetCard: { backgroundColor: COLORS.primaryLight, borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#C7D2FE' },
+  targetTitle: { fontSize: 15, fontWeight: 'bold', color: COLORS.primary, marginBottom: 4 },
   targetDescription: { fontSize: 13, color: COLORS.primaryDark },
   boldText: { fontWeight: 'bold' },
-  attendanceCard: { backgroundColor: COLORS.cardBg, borderRadius: 10, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: COLORS.border },
+  attendanceCard: { backgroundColor: COLORS.cardBg, borderRadius: 12, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: COLORS.border },
   attendanceSummary: { flexDirection: 'row', justifyContent: 'space-around' },
   metric: { alignItems: 'center', paddingVertical: 8 },
   metricValue: { fontSize: 22, fontWeight: 'bold', color: COLORS.textPrimary },
   metricLabel: { fontSize: 13, color: COLORS.textSecondary, marginTop: 4 },
-  standingText: { fontSize: 14, color: COLORS.textSecondary, marginTop: 12 },
+  standingText: { fontSize: 13.5, color: COLORS.textSecondary, marginTop: 12 },
   subjectRow: { backgroundColor: COLORS.cardBg, borderRadius: 10, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: COLORS.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   subjectInfo: { flex: 1, paddingRight: 12 },
   subjectCode: { fontSize: 12, fontWeight: 'bold', color: COLORS.textSecondary },
@@ -173,5 +188,22 @@ const styles = StyleSheet.create({
   subjectPercentage: { fontSize: 16, fontWeight: 'bold' },
   criticalText: { color: COLORS.danger },
   safeText: { color: COLORS.success },
-  emptyText: { color: COLORS.textSecondary, textAlign: 'center', marginBottom: 12 }
+  emptyText: { color: COLORS.textSecondary, textAlign: 'center', marginBottom: 12 },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: COLORS.dangerBg,
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginTop: 20,
+  },
+  logoutButtonText: {
+    color: COLORS.danger,
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
 });
